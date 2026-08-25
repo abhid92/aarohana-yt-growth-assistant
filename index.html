@@ -8,577 +8,880 @@
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-  :root{
-    --bg:#0E1014;
-    --panel:#171A21;
-    --panel-2:#1F232C;
-    --line:#2A2F3A;
-    --ink:#EDEFF3;
-    --ink-dim:#9AA2B1;
-    --ink-faint:#6B7280;
-    --accent:#4ADE80;
-    --accent-2:#38BDF8;
-    --warn:#F59E0B;
-    --bad:#F87171;
-    --radius:10px;
-    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-    --ui:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-  }
-  *{box-sizing:border-box}
-  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui);-webkit-font-smoothing:antialiased}
-  a{color:var(--accent-2)}
-  button{font-family:var(--ui);cursor:pointer}
-  .wrap{max-width:1180px;margin:0 auto;padding:24px 20px 80px}
-  header.top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-bottom:18px;border-bottom:1px solid var(--line);flex-wrap:wrap}
-  .brand{display:flex;align-items:center;gap:12px}
-  .brand .dot{width:11px;height:11px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(74,222,128,.14)}
-  .brand h1{font-size:16px;font-weight:650;letter-spacing:-.01em;margin:0}
-  .brand .sub{font-size:12px;color:var(--ink-faint);margin-top:1px}
-  .auth-slot{display:flex;align-items:center;gap:10px}
-  .chan-chip{display:none;align-items:center;gap:9px;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px 12px 5px 6px;font-size:13px}
-  .chan-chip img{width:26px;height:26px;border-radius:50%}
-  .btn{background:var(--panel-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:9px 14px;font-size:13px;font-weight:550;transition:.15s}
-  .btn:hover{border-color:#3A4150}
-  .btn.primary{background:var(--accent);color:#08130C;border-color:transparent;font-weight:650}
-  .btn.primary:hover{filter:brightness(1.05)}
-  .btn.ghost{background:transparent}
-  .btn:disabled{opacity:.5;cursor:not-allowed}
+:root{
+  --bg:#0C0F13;--sb:#111418;--panel:#171B22;--p2:#1E2330;
+  --line:#252B38;--ink:#E8ECF2;--dim:#8A95A8;--faint:#55606E;
+  --accent:#4ADE80;--blue:#38BDF8;--purple:#A78BFA;
+  --warn:#F59E0B;--bad:#F87171;--r:10px;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --ui:'Inter',system-ui,-apple-system,sans-serif;
+  --sbw:230px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--ink);font-family:var(--ui);-webkit-font-smoothing:antialiased;overflow:hidden}
+button{font-family:var(--ui);cursor:pointer}
+input,select{font-family:var(--mono)}
 
-  nav.tabs{display:flex;gap:4px;margin:22px 0 20px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:4px;width:fit-content}
-  nav.tabs button{background:transparent;border:0;color:var(--ink-dim);padding:8px 18px;border-radius:7px;font-size:13.5px;font-weight:550}
-  nav.tabs button.on{background:var(--panel-2);color:var(--ink)}
+/* Shell */
+.shell{display:flex;height:100vh;overflow:hidden}
 
-  .view{display:none}
-  .view.on{display:block}
+/* Sidebar */
+.sb{width:var(--sbw);flex-shrink:0;background:var(--sb);border-right:1px solid var(--line);display:flex;flex-direction:column;height:100vh;overflow-y:auto}
+.sb-top{display:flex;align-items:center;justify-content:space-between;padding:16px 14px 12px;border-bottom:1px solid var(--line)}
+.brand-left{display:flex;align-items:center;gap:8px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px rgba(74,222,128,.14);flex-shrink:0}
+.brand-left h1{font-size:13px;font-weight:660;letter-spacing:-.01em}
+.gear-btn{background:transparent;border:1px solid var(--line);color:var(--dim);border-radius:7px;padding:5px 9px;font-size:14px;transition:.15s;line-height:1}
+.gear-btn:hover{color:var(--ink);border-color:#3A4150}
 
-  .setup{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px;margin-bottom:22px}
-  .setup h3{margin:0 0 4px;font-size:14px}
-  .setup p{margin:0 0 16px;font-size:13px;color:var(--ink-dim);line-height:1.55}
-  .field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
-  .field label{font-size:12px;color:var(--ink-dim);font-weight:550}
-  .field input{background:var(--bg);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:11px 12px;font-size:13px;font-family:var(--mono)}
-  .field input:focus{outline:none;border-color:var(--accent-2)}
-  .row{display:flex;gap:12px;flex-wrap:wrap}
-  .row .field{flex:1;min-width:200px}
+.chan-chip{display:none;align-items:center;gap:9px;padding:10px 14px;border-bottom:1px solid var(--line)}
+.chan-chip img{width:28px;height:28px;border-radius:50%;flex-shrink:0}
+.chan-chip .cname{font-size:12px;font-weight:550;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chan-chip .csub{font-size:10px;color:var(--faint);font-family:var(--mono)}
 
-  .controls{display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap}
-  .seg{display:flex;background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden}
-  .seg button{background:transparent;border:0;color:var(--ink-dim);padding:8px 14px;font-size:12.5px;font-weight:550;border-right:1px solid var(--line)}
-  .seg button:last-child{border-right:0}
-  .seg button.on{background:var(--panel-2);color:var(--ink)}
-  .daterange{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-dim)}
-  .daterange input{background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:7px 9px;font-size:12.5px;font-family:var(--mono)}
+.sign-btn{width:calc(100% - 24px);margin:10px 12px 8px;background:var(--accent);color:#08130C;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:660;transition:.15s}
+.sign-btn:hover{filter:brightness(1.06)}
+.sign-btn:disabled{opacity:.45;cursor:not-allowed}
 
-  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
-  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
-  .kpi .k-label{font-size:11.5px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
-  .kpi .k-val{font-size:26px;font-weight:680;font-family:var(--mono);letter-spacing:-.02em;margin:8px 0 3px}
-  .kpi .k-delta{font-size:12px;font-weight:600;font-family:var(--mono)}
-  .k-delta.up{color:var(--accent)} .k-delta.down{color:var(--bad)} .k-delta.flat{color:var(--ink-faint)}
+.sb-sec{padding:8px 14px 4px;font-size:9.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+.sb-nav a{display:flex;align-items:center;gap:8px;padding:8px 14px;font-size:12.5px;color:var(--dim);text-decoration:none;cursor:pointer;border-left:2px solid transparent;transition:.1s}
+.sb-nav a:hover{color:var(--ink);background:rgba(255,255,255,.04)}
+.sb-nav a.on{color:var(--accent);border-left-color:var(--accent);background:rgba(74,222,128,.05)}
+.sb-nav a .ico{width:14px;text-align:center;font-size:12px;flex-shrink:0}
 
-  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:14px}
-  .panel h2{font-size:13px;font-weight:620;margin:0 0 14px;color:var(--ink);display:flex;align-items:center;gap:8px}
-  .panel h2 .tag{font-size:11px;color:var(--ink-faint);font-weight:500}
-  .chart-box{position:relative;height:280px}
+.divider{height:1px;background:var(--line);margin:6px 0}
 
-  table{width:100%;border-collapse:collapse;font-size:13px}
-  th{text-align:right;font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.04em;font-weight:600;padding:8px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
-  th.l,td.l{text-align:left}
-  td{padding:11px 12px;border-bottom:1px solid var(--line);text-align:right;font-family:var(--mono);color:var(--ink-dim)}
-  td.l{font-family:var(--ui);color:var(--ink);max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  tr:hover td{background:var(--panel-2)}
-  .vid-cell{display:flex;align-items:center;gap:10px}
-  .vid-cell img{width:52px;height:29px;border-radius:4px;object-fit:cover;flex-shrink:0}
-  .flag{display:inline-block;font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:5px;margin-left:6px}
-  .flag.ctr{background:rgba(248,113,113,.14);color:var(--bad)}
-  .flag.ret{background:rgba(245,158,11,.14);color:var(--warn)}
-  .flag.good{background:rgba(74,222,128,.14);color:var(--accent)}
+/* Date controls */
+.sb-dates{padding:8px 14px 10px}
+.ctrl-lbl{font-size:9.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.07em;font-weight:600;margin-bottom:6px}
+.presets{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+.presets button{background:var(--p2);border:1px solid var(--line);color:var(--dim);border-radius:6px;padding:4px 8px;font-size:11px;font-weight:550;transition:.1s}
+.presets button.on{background:var(--accent);color:#08130C;border-color:transparent;font-weight:660}
+.di{display:flex;flex-direction:column;gap:4px;margin-bottom:6px}
+.di input{background:var(--p2);border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:6px 8px;font-size:11px;width:100%}
+.di input:focus{outline:none;border-color:var(--blue)}
+.di .di-lbl{font-size:10px;color:var(--faint)}
 
-  .empty{text-align:center;padding:60px 20px;color:var(--ink-faint)}
-  .empty .big{font-size:15px;color:var(--ink-dim);margin-bottom:6px}
+/* Compare toggle */
+.cmp-toggle{display:flex;align-items:center;gap:7px;margin:8px 0 6px;font-size:12px;color:var(--dim);cursor:pointer;user-select:none}
+.cmp-toggle input[type=checkbox]{accent-color:var(--accent);width:13px;height:13px}
+.cmp-dates{display:none;border-left:2px solid var(--blue);padding-left:10px;margin-bottom:6px}
+.cmp-dates.show{display:block}
+.cmp-badge{display:inline-block;font-size:9px;font-weight:600;padding:1px 5px;border-radius:4px;background:rgba(56,189,248,.14);color:var(--blue);margin-left:4px;vertical-align:middle}
 
-  .note{font-size:12px;color:var(--warn);background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:8px;padding:10px 13px;line-height:1.5;margin-bottom:16px}
-  .spinner{display:inline-block;width:15px;height:15px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px}
-  @keyframes spin{to{transform:rotate(360deg)}}
+.apply-btn{width:100%;background:var(--p2);border:1px solid var(--line);color:var(--dim);border-radius:7px;padding:7px;font-size:11.5px;font-weight:550;transition:.1s}
+.apply-btn:hover{color:var(--ink);border-color:#3A4150}
 
-  /* SEO tab */
-  .seo-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  .seo-out{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;min-height:120px}
-  .seo-out h4{margin:0 0 10px;font-size:12px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.04em}
-  .opt{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 13px;margin-bottom:9px;font-size:13.5px;line-height:1.5;display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
-  .opt .copy{background:transparent;border:1px solid var(--line);color:var(--ink-dim);border-radius:6px;padding:3px 9px;font-size:11px;flex-shrink:0}
-  .taglist{display:flex;flex-wrap:wrap;gap:6px}
-  .taglist span{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--ink-dim);font-family:var(--mono)}
-  .desc-box{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px;font-size:13px;line-height:1.6;color:var(--ink-dim);white-space:pre-wrap}
-  .current{font-size:12.5px;color:var(--ink-dim);background:var(--panel-2);border-radius:8px;padding:12px;margin-bottom:14px;line-height:1.5}
-  .current b{color:var(--ink)}
+/* Main */
+.main{flex:1;overflow-y:auto;padding:20px 24px 60px}
+.top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.top-bar .pg{font-size:13.5px;font-weight:620}
+.top-bar .st{font-size:11.5px;color:var(--faint)}
 
-  @media(max-width:820px){
-    .kpis{grid-template-columns:repeat(2,1fr)}
-    .seo-grid{grid-template-columns:1fr}
-  }
+/* Sections */
+.section{margin-bottom:26px;scroll-margin-top:8px}
+.sec-title{font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.07em;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.sec-title::after{content:'';flex:1;height:1px;background:var(--line)}
+
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:13px 14px}
+.kl{font-size:9.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.kv{font-size:21px;font-weight:700;font-family:var(--mono);letter-spacing:-.02em;margin:6px 0 2px}
+.kv2{font-size:13px;font-weight:600;font-family:var(--mono);color:var(--blue);margin-bottom:2px}
+.kd{font-size:11px;font-weight:600;font-family:var(--mono)}
+.kd.up{color:var(--accent)}.kd.dn{color:var(--bad)}.kd.fl{color:var(--faint)}
+
+/* Grids */
+.col2{display:grid;grid-template-columns:3fr 2fr;gap:11px}
+.col2e{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+
+/* Card */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:15px}
+.card h3{font-size:11.5px;font-weight:620;color:var(--ink);margin-bottom:11px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.card h3 .sub{font-size:10px;color:var(--faint);font-weight:400}
+.cw{position:relative;height:230px}.cw-sm{position:relative;height:175px}
+
+/* Traffic */
+.src-row{display:flex;align-items:center;gap:7px;margin-bottom:7px}
+.src-lbl{width:125px;color:var(--dim);flex-shrink:0;font-size:11px}
+.src-track{flex:1;height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.src-fill{height:100%;border-radius:3px;transition:width .5s}
+.src-pct{width:34px;text-align:right;font-family:var(--mono);font-size:10.5px;color:var(--dim);flex-shrink:0}
+.src-cmp{width:30px;text-align:right;font-family:var(--mono);font-size:10px;color:var(--blue);flex-shrink:0}
+
+/* Search keywords */
+.kw-row{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.kw-term{font-size:12px;color:var(--ink);width:190px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kw-track{flex:1;height:5px;background:var(--line);border-radius:3px;overflow:hidden}
+.kw-fill{height:100%;background:var(--accent);border-radius:3px}
+.kw-ct{font-family:var(--mono);font-size:10.5px;color:var(--dim);width:50px;text-align:right;flex-shrink:0}
+
+/* Videos */
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:right;font-size:9.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.04em;font-weight:600;padding:7px 9px;border-bottom:1px solid var(--line);white-space:nowrap}
+th.l,td.l{text-align:left}
+td{padding:8px 9px;border-bottom:1px solid var(--line);text-align:right;font-family:var(--mono);color:var(--dim)}
+td.l{font-family:var(--ui);color:var(--ink);max-width:250px}
+.vc{display:flex;align-items:center;gap:8px}
+.vc img{width:46px;height:26px;border-radius:3px;object-fit:cover;flex-shrink:0}
+.vt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+tr.vrow{cursor:pointer}
+tr.vrow:hover td{background:var(--p2)}
+tr.vrow.exp td{background:var(--p2);border-bottom:0}
+tr.exprow td{padding:0;border-bottom:1px solid var(--line)}
+.expinner{padding:13px;background:var(--p2)}
+.flag{display:inline-block;font-size:9.5px;font-weight:600;padding:1px 5px;border-radius:4px;margin-left:5px}
+.flag.ctr{background:rgba(248,113,113,.14);color:var(--bad)}
+.flag.ret{background:rgba(245,158,11,.14);color:var(--warn)}
+.flag.good{background:rgba(74,222,128,.14);color:var(--accent)}
+.flag.cta{background:rgba(167,139,250,.14);color:var(--purple)}
+
+/* SEO */
+.seo-inp{display:flex;gap:7px;margin-bottom:11px}
+.seo-inp input{flex:1;background:var(--p2);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px;font-size:12.5px}
+.seo-inp input:focus{outline:none;border-color:var(--blue)}
+.seo-inp button{background:var(--accent);color:#08130C;border:none;border-radius:8px;padding:9px 15px;font-size:12px;font-weight:660}
+.score-strip{display:flex;gap:9px;margin-bottom:11px}
+.sbox{flex:1;background:var(--p2);border:1px solid var(--line);border-radius:8px;padding:11px}
+.sbox h4{font-size:9.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;font-weight:600;margin-bottom:8px}
+.shead{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.sring{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;font-family:var(--mono);border:2px solid;flex-shrink:0}
+.sring.g{color:var(--accent);border-color:var(--accent)}
+.sring.o{color:var(--warn);border-color:var(--warn)}
+.sring.r{color:var(--bad);border-color:var(--bad)}
+.si{display:flex;align-items:flex-start;gap:5px;font-size:11px;color:var(--dim);margin-bottom:4px}
+.sdot{width:13px;height:13px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;flex-shrink:0;margin-top:1px}
+.sdot.p{background:rgba(74,222,128,.18);color:var(--accent)}
+.sdot.f{background:rgba(248,113,113,.18);color:var(--bad)}
+.sdot.w{background:rgba(245,158,11,.18);color:var(--warn)}
+.seo-res{display:none}
+.seo-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:9px}
+.sout{background:var(--p2);border:1px solid var(--line);border-radius:8px;padding:12px}
+.sout h4{font-size:9.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;font-weight:600;margin-bottom:8px}
+.opt{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 11px;margin-bottom:7px;font-size:12.5px;line-height:1.45;display:flex;justify-content:space-between;gap:7px;align-items:flex-start}
+.opt .cb{background:transparent;border:1px solid var(--line);color:var(--dim);border-radius:4px;padding:2px 7px;font-size:10px;flex-shrink:0}
+.tlist{display:flex;flex-wrap:wrap;gap:4px}
+.tlist span{background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:3px 7px;font-size:10.5px;color:var(--dim);font-family:var(--mono)}
+.dbox{background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:10px;font-size:12px;line-height:1.6;color:var(--dim);white-space:pre-wrap;max-height:170px;overflow-y:auto}
+
+/* Digest */
+.dout{background:var(--p2);border:1px solid var(--line);border-radius:10px;padding:18px;font-size:13px;line-height:1.8;color:var(--dim);white-space:pre-wrap;margin-top:11px}
+.gen-btn{background:var(--accent);color:#08130C;border:none;border-radius:8px;padding:9px 16px;font-size:12.5px;font-weight:660}
+
+/* Theme cards */
+.tcard{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px;margin-bottom:7px}
+.tcard h5{font-size:11.5px;color:var(--ink);margin-bottom:3px}
+.tcard p{font-size:11px;color:var(--dim);line-height:1.5}
+.tbadge{display:inline-block;font-size:9px;font-weight:600;padding:1px 5px;border-radius:3px;margin-bottom:4px}
+.tbadge.question{background:rgba(56,189,248,.14);color:var(--blue)}
+.tbadge.praise{background:rgba(74,222,128,.14);color:var(--accent)}
+.tbadge.request{background:rgba(167,139,250,.14);color:var(--purple)}
+.tbadge.complaint{background:rgba(248,113,113,.14);color:var(--bad)}
+
+/* Settings Modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:24px;width:400px;max-width:calc(100vw - 40px);position:relative;max-height:80vh;overflow-y:auto}
+.modal h2{font-size:15px;font-weight:660;margin-bottom:18px}
+.modal-close{position:absolute;top:14px;right:14px;background:var(--p2);border:1px solid var(--line);color:var(--dim);border-radius:6px;padding:4px 9px;font-size:13px}
+.mfield{margin-bottom:14px}
+.mfield label{display:block;font-size:11px;color:var(--dim);font-weight:550;margin-bottom:5px}
+.mfield input{width:100%;background:var(--p2);border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:10px 11px;font-size:12.5px}
+.mfield input:focus{outline:none;border-color:var(--blue)}
+.mfield input::placeholder{color:var(--faint)}
+.mfield .hint{font-size:10.5px;color:var(--faint);margin-top:4px;line-height:1.4}
+.save-btn{width:100%;background:var(--accent);color:#08130C;border:none;border-radius:8px;padding:11px;font-size:13px;font-weight:660;margin-top:4px}
+
+/* Utils */
+.hidden{display:none!important}
+.empty{text-align:center;padding:40px 20px;color:var(--faint)}
+.empty .big{font-size:14px;color:var(--dim);margin-bottom:4px}
+.note{font-size:11px;color:var(--warn);background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);border-radius:6px;padding:8px 11px;line-height:1.5;margin-bottom:11px}
+.info{font-size:11px;color:var(--blue);background:rgba(56,189,248,.06);border:1px solid rgba(56,189,248,.16);border-radius:6px;padding:8px 11px;line-height:1.5;margin-bottom:11px}
+.spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;vertical-align:-1px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.bsm{background:var(--p2);border:1px solid var(--line);color:var(--dim);border-radius:5px;padding:4px 10px;font-size:11px;font-weight:550}
+.bsm:hover{color:var(--ink)}
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="shell">
 
-  <header class="top">
-    <div class="brand">
+<!-- ══ SIDEBAR ══ -->
+<aside class="sb">
+
+  <div class="sb-top">
+    <div class="brand-left">
       <span class="dot"></span>
-      <div>
-        <h1>Channel Growth Manager</h1>
-        <div class="sub">Direct-to-Google. Your data never leaves your browser.</div>
-      </div>
+      <h1>Growth Manager</h1>
     </div>
-    <div class="auth-slot">
-      <div class="chan-chip" id="chanChip">
-        <img id="chanAvatar" src="" alt="">
-        <span id="chanName"></span>
-      </div>
-      <button class="btn primary" id="signBtn" onclick="handleAuthClick()" disabled>Loading…</button>
-    </div>
-  </header>
+    <button class="gear-btn" onclick="openSettings()" title="Setup">⚙</button>
+  </div>
 
-  <nav class="tabs">
-    <button class="on" data-view="dash" onclick="switchTab('dash')">Insights</button>
-    <button data-view="seo" onclick="switchTab('seo')">SEO Optimizer</button>
-    <button data-view="config" onclick="switchTab('config')">Setup</button>
+  <div class="chan-chip" id="chanChip">
+    <img id="chanAvatar" src="" alt="">
+    <div><div class="cname" id="chanName"></div><div class="csub" id="chanSubs"></div></div>
+  </div>
+
+  <button class="sign-btn" id="signBtn" onclick="handleAuth()" disabled>Loading…</button>
+
+  <!-- Date controls -->
+  <div class="sb-dates">
+    <div class="ctrl-lbl">Period</div>
+    <div class="presets" id="presets">
+      <button data-d="7">7d</button>
+      <button data-d="28" class="on">28d</button>
+      <button data-d="90">90d</button>
+      <button data-d="365">1yr</button>
+    </div>
+    <div class="di">
+      <div class="di-lbl">From</div>
+      <input type="date" id="startDate">
+    </div>
+    <div class="di">
+      <div class="di-lbl">To</div>
+      <input type="date" id="endDate">
+    </div>
+
+    <div class="divider" style="margin:8px 0"></div>
+
+    <label class="cmp-toggle">
+      <input type="checkbox" id="cmpToggle" onchange="toggleCmp()">
+      Compare with <span class="cmp-badge">BETA</span>
+    </label>
+
+    <div class="cmp-dates" id="cmpDates">
+      <div class="di">
+        <div class="di-lbl">Compare from</div>
+        <input type="date" id="cmpStart">
+      </div>
+      <div class="di" style="margin-top:4px">
+        <div class="di-lbl">Compare to</div>
+        <input type="date" id="cmpEnd">
+      </div>
+    </div>
+
+    <button class="apply-btn" onclick="load()">Apply</button>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Nav -->
+  <div class="sb-sec">Sections</div>
+  <nav class="sb-nav">
+    <a onclick="goTo('sec-overview')" class="on"><span class="ico">▣</span> Overview</a>
+    <a onclick="goTo('sec-traffic')"><span class="ico">⇄</span> Traffic Sources</a>
+    <a onclick="goTo('sec-keywords')"><span class="ico">⌕</span> Search Keywords</a>
+    <a onclick="goTo('sec-videos')"><span class="ico">▶</span> Videos</a>
+    <a onclick="goTo('sec-seo')"><span class="ico">◈</span> SEO Optimizer</a>
+    <a onclick="goTo('sec-digest')"><span class="ico">✦</span> Weekly Digest</a>
   </nav>
 
-  <!-- ================= SETUP ================= -->
-  <section class="view" id="view-config">
-    <div class="setup">
-      <h3>One-time setup</h3>
-      <p>Paste your own Google OAuth Client ID below. It is stored only in this browser (localStorage) and is sent only to Google when you sign in. Steps to create it are at the bottom of this file's instructions.</p>
-      <div class="field">
-        <label>Google OAuth Client ID</label>
-        <input id="clientIdInput" placeholder="xxxxx.apps.googleusercontent.com" oninput="saveClientId()">
-      </div>
-      <p style="margin-top:2px">The SEO Optimizer tab optionally uses an Anthropic API key to generate title/description/keyword suggestions. This is the one place data (public video metadata) leaves your browser — it goes to Anthropic. Leave blank if you don't want that.</p>
-      <div class="field">
-        <label>Anthropic API Key (optional — SEO tab only)</label>
-        <input id="anthropicKeyInput" type="password" placeholder="sk-ant-…" oninput="saveAnthropicKey()">
-      </div>
-    </div>
-    <div class="setup">
-      <h3>Client channel</h3>
-      <p>If you manage a channel you do not own (Manager access), enter its Channel ID here. Find it in YouTube Studio → Settings → Channel → Advanced Settings. It starts with UC. Leave blank to use your own channel.</p>
-      <div class="field">
-        <label>Client Channel ID (optional)</label>
-        <input id="clientChannelInput" placeholder="UCxxxxxxxxxxxxxxxxxxxxxxxx" oninput="saveClientChannel()">
-      </div>
-    </div>
-  </section>
+</aside>
 
-  <!-- ================= INSIGHTS ================= -->
-  <section class="view on" id="view-dash">
-    <div id="dashGate" class="panel">
-      <div class="empty">
-        <div class="big">Sign in to load your channel</div>
-        <div>Use the button in the top-right. You'll authorise read-only access to your own analytics.</div>
-      </div>
+<!-- ══ MAIN ══ -->
+<main class="main" id="mainEl">
+
+  <div id="gateMsg" style="margin-top:70px">
+    <div class="empty">
+      <div class="big">Sign in to load your channel</div>
+      <div>Click ⚙ to add your OAuth Client ID, then sign in.</div>
+    </div>
+  </div>
+
+  <div id="dashBody" class="hidden">
+
+    <div class="top-bar">
+      <div class="pg" id="pgTitle">Channel overview</div>
+      <div class="st" id="stEl"></div>
     </div>
 
-    <div id="dashBody" style="display:none">
-      <div class="controls">
-        <div class="seg" id="presetSeg">
-          <button data-days="28" class="on">28 days</button>
-          <button data-days="90">90 days</button>
-          <button data-days="365">365 days</button>
+    <!-- OVERVIEW -->
+    <div class="section" id="sec-overview">
+      <div class="sec-title">Overview</div>
+      <div class="kpis" id="kpis" style="margin-bottom:11px"></div>
+      <div class="col2">
+        <div class="card">
+          <h3>Views &amp; Watch Time <span class="sub">daily</span></h3>
+          <div class="cw"><canvas id="trendChart"></canvas></div>
         </div>
-        <div class="daterange">
-          <input type="date" id="startDate"> <span>to</span> <input type="date" id="endDate">
-          <button class="btn ghost" style="padding:7px 12px" onclick="customRange()">Apply</button>
+        <div class="card">
+          <h3>Traffic Sources <span class="sub">% of total views</span></h3>
+          <div id="srcChart"><span class="spinner"></span></div>
         </div>
-        <div style="flex:1"></div>
-        <span id="dashStatus" style="font-size:12px;color:var(--ink-faint)"></span>
       </div>
+    </div>
 
-      <div class="kpis" id="kpis"></div>
-
-      <div class="panel">
-        <h2>Views &amp; watch time <span class="tag">daily, selected range</span></h2>
-        <div class="chart-box"><canvas id="trendChart"></canvas></div>
+    <!-- TRAFFIC DETAIL -->
+    <div class="section" id="sec-traffic">
+      <div class="sec-title">Traffic Sources — Detail</div>
+      <div class="col2e">
+        <div class="card"><h3>Breakdown</h3><div id="srcDetail"></div></div>
+        <div class="card"><h3>What each source means for growth</h3><div id="srcInsight"></div></div>
       </div>
+    </div>
 
-      <div class="panel">
-        <h2>Videos <span class="tag">ranked by views in range · flags mark the likely bottleneck</span></h2>
+    <!-- KEYWORDS -->
+    <div class="section" id="sec-keywords">
+      <div class="sec-title">Search Keywords</div>
+      <div class="card">
+        <h3>Exact terms driving traffic <span class="sub">confirmed — people typed these on YouTube and clicked your video</span></h3>
+        <div class="info">Use these exact phrases in your next titles, descriptions, and tags. Not AI guesses — real search data.</div>
+        <div id="kwList"><span class="spinner"></span></div>
+      </div>
+    </div>
+
+    <!-- VIDEOS -->
+    <div class="section" id="sec-videos">
+      <div class="sec-title">Videos</div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <div style="padding:13px 14px 9px;border-bottom:1px solid var(--line)">
+          <h3 style="margin:0">Video performance <span class="sub">click a row to expand retention + comment analysis</span></h3>
+        </div>
         <div style="overflow-x:auto">
-          <table id="vidTable">
-            <thead>
-              <tr>
-                <th class="l">Video</th>
-                <th>Views</th>
-                <th>Watch time (h)</th>
-                <th>Avg view</th>
-                <th>Avg %</th>
-                <th>Impressions</th>
-                <th>CTR</th>
-                <th>Subs</th>
-                <th>Likes</th>
-                <th>Comments</th>
-              </tr>
-            </thead>
+          <table>
+            <thead><tr>
+              <th class="l">Video</th><th>Views</th><th>Watch(h)</th>
+              <th>Avg view</th><th>Retention</th><th>Impressions</th>
+              <th>CTR</th><th>Subs</th><th>Bottleneck</th>
+            </tr></thead>
             <tbody id="vidBody"></tbody>
           </table>
         </div>
       </div>
     </div>
-  </section>
 
-  <!-- ================= SEO ================= -->
-  <section class="view" id="view-seo">
-    <div class="panel">
-      <h2>Analyse a video</h2>
-      <div class="row">
-        <div class="field" style="flex:3">
-          <label>YouTube video URL or ID</label>
-          <input id="seoInput" placeholder="https://youtube.com/watch?v=…  or  video ID">
+    <!-- SEO -->
+    <div class="section" id="sec-seo">
+      <div class="sec-title">SEO Optimizer</div>
+      <div class="card">
+        <h3>Analyse any video</h3>
+        <div class="seo-inp">
+          <input id="seoInput" placeholder="Paste YouTube URL or video ID…">
+          <button onclick="runSEO()">Analyse</button>
         </div>
-        <div class="field" style="flex:0;justify-content:flex-end;min-width:150px">
-          <label>&nbsp;</label>
-          <button class="btn primary" onclick="runSEO()">Generate suggestions</button>
+        <div id="seoNote" class="note hidden"></div>
+        <div id="seoScores" class="hidden">
+          <div class="score-strip">
+            <div class="sbox"><h4>Title score</h4><div id="tScore"></div></div>
+            <div class="sbox"><h4>Description score</h4><div id="dScore"></div></div>
+          </div>
         </div>
-      </div>
-      <div id="seoNote" class="note" style="display:none"></div>
-    </div>
-
-    <div id="seoCurrent"></div>
-
-    <div id="seoResults" style="display:none">
-      <div class="seo-grid">
-        <div class="seo-out">
-          <h4>Suggested titles</h4>
-          <div id="seoTitles"></div>
+        <div id="seoCur"></div>
+        <div id="seoRes" class="seo-res">
+          <div class="seo-row">
+            <div class="sout"><h4>Suggested titles</h4><div id="seoTitles"></div></div>
+            <div class="sout"><h4>Tags / keywords</h4><div class="tlist" id="seoTags"></div></div>
+          </div>
+          <div class="seo-row">
+            <div class="sout">
+              <h4>Rewritten description</h4>
+              <div class="dbox" id="seoDesc"></div>
+              <button class="bsm" style="margin-top:7px" onclick="cp(document.getElementById('seoDesc').innerText)">Copy</button>
+            </div>
+            <div class="sout">
+              <h4>Thumbnail assessment</h4>
+              <div class="dbox" id="seoThumb"></div>
+              <h4 style="margin-top:9px">Rationale</h4>
+              <div class="dbox" id="seoRat"></div>
+            </div>
+          </div>
         </div>
-        <div class="seo-out">
-          <h4>Keywords / tags</h4>
-          <div class="taglist" id="seoTags"></div>
-        </div>
-      </div>
-      <div class="seo-out" style="margin-top:14px">
-        <h4>Rewritten description</h4>
-        <div class="desc-box" id="seoDesc"></div>
-        <button class="btn" style="margin-top:12px" onclick="copyText(document.getElementById('seoDesc').innerText)">Copy description</button>
-      </div>
-      <div class="seo-out" style="margin-top:14px">
-        <h4>Why these changes</h4>
-        <div class="desc-box" id="seoRationale"></div>
       </div>
     </div>
-  </section>
 
+    <!-- DIGEST -->
+    <div class="section" id="sec-digest">
+      <div class="sec-title">Weekly Digest</div>
+      <div class="card">
+        <h3>AI growth brief <span class="sub">last 7 days vs previous 7 · ready to send to your client</span></h3>
+        <button class="gen-btn" id="digestBtn" onclick="genDigest()">Generate digest</button>
+        <div id="digestOut"></div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- ══ SETTINGS MODAL ══ -->
+<div class="modal-bg" id="settingsModal" onclick="handleModalClick(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeSettings()">✕</button>
+    <h2>Setup</h2>
+
+    <div class="mfield">
+      <label>Google OAuth Client ID</label>
+      <input id="cidIn" placeholder="xxxxx.apps.googleusercontent.com" oninput="saveCID()">
+      <div class="hint">From Google Cloud Console → Credentials → OAuth 2.0. Stored only in this browser.</div>
+    </div>
+
+    <div class="mfield">
+      <label>Client Channel ID <span style="color:var(--faint);font-weight:400">(optional)</span></label>
+      <input id="chIn" placeholder="UCxxxxxxxxxxxxxxxxxxxxxxxx" oninput="saveCH()">
+      <div class="hint">If you manage a channel you don't own. YouTube Studio → Settings → Channel → Advanced Settings.</div>
+    </div>
+
+    <div class="mfield">
+      <label>Anthropic API Key <span style="color:var(--faint);font-weight:400">(SEO, comments, digest)</span></label>
+      <input id="antIn" type="password" placeholder="sk-ant-…" oninput="saveANT()">
+      <div class="hint">Used for AI features only. Sent directly from your browser to Anthropic. Nothing routes through third parties.</div>
+    </div>
+
+    <button class="save-btn" onclick="closeSettings()">Save &amp; close</button>
+  </div>
 </div>
 
+</div><!-- /shell -->
+
 <script>
-/* ---------- config / persistence ---------- */
-const SCOPES = 'https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/yt-analytics.readonly';
-let tokenClient, gapiReady=false, gisReady=false, accessToken=null, channelId=null;
+const SCOPES='https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/yt-analytics.readonly';
+const TL={'YT_SEARCH':'YouTube Search','SUGGESTED_VIDEO':'Suggested Videos','BROWSE':'Browse Features','SUBSCRIBER':'Subscribers','PLAYLIST':'Playlists','NO_LINK_EMBEDDED':'Embedded','EXT_URL':'External','NOTIFICATION':'Notifications','YT_CHANNEL':'Channel Page','HASHTAG':'Hashtags','NO_LINK_OTHER':'Direct/Unknown','END_SCREEN':'End Screens'};
+const TC=['#4ADE80','#38BDF8','#A78BFA','#FB923C','#F472B6','#FACC15','#34D399','#60A5FA','#F87171','#E879F9'];
+const SI={'YT_SEARCH':'Most durable source — compounds over time independent of the algorithm. Priority: grow this percentage.','SUGGESTED_VIDEO':'Algorithm-driven. Great for spikes but fragile. Sustained by high CTR and retention.','BROWSE':'YouTube showing you on home feeds. Driven by subscriber engagement and watch time signals.','SUBSCRIBER':'Existing audience returning. Low ratio means subscribers are not engaged or notified.','EXT_URL':'Traffic from outside YouTube. Reduces algorithm dependency — a healthy indicator.','NOTIFICATION':'Most loyal audience — subscribers who clicked the bell.'};
 
-function saveClientId(){ localStorage.setItem('ytgm_client_id', document.getElementById('clientIdInput').value.trim()); }
-function saveAnthropicKey(){ localStorage.setItem('ytgm_anthropic', document.getElementById('anthropicKeyInput').value.trim()); }
-function saveClientChannel(){ localStorage.setItem('ytgm_channel', document.getElementById('clientChannelInput').value.trim()); }
-function getClientId(){ return (localStorage.getItem('ytgm_client_id')||'').trim(); }
-function getAnthropicKey(){ return (localStorage.getItem('ytgm_anthropic')||'').trim(); }
-function getClientChannel(){ return (localStorage.getItem('ytgm_channel')||'').trim(); }
+let tokenClient,gapiReady=false,gisReady=false,accessToken=null,channelId=null,loadedVideos=[],trendChart=null,cmpMode=false;
 
+// Storage
+const saveCID=()=>localStorage.setItem('ytgm_cid',document.getElementById('cidIn').value.trim());
+const saveCH=()=>localStorage.setItem('ytgm_ch',document.getElementById('chIn').value.trim());
+const saveANT=()=>localStorage.setItem('ytgm_ant',document.getElementById('antIn').value.trim());
+const getCID=()=>(localStorage.getItem('ytgm_cid')||'').trim();
+const getCH=()=>(localStorage.getItem('ytgm_ch')||'').trim();
+const getANT=()=>(localStorage.getItem('ytgm_ant')||'').trim();
+
+// Helpers
+const iso=d=>d.toISOString().slice(0,10);
+const fi=n=>(+n||0).toLocaleString();
+const fd=s=>{s=Math.round(+s||0);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');};
+const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const cp=t=>navigator.clipboard.writeText(t);
+const days=(a,b)=>Math.round((new Date(b)-new Date(a))/864e5)+1;
+const setStatus=t=>document.getElementById('stEl').textContent=t;
+
+// Init
 window.addEventListener('DOMContentLoaded',()=>{
-  document.getElementById('clientIdInput').value = getClientId();
-  document.getElementById('anthropicKeyInput').value = getAnthropicKey();
-  document.getElementById('clientChannelInput').value = getClientChannel();
-  const today=new Date(), past=new Date(Date.now()-28*864e5);
-  document.getElementById('endDate').value = iso(today);
-  document.getElementById('startDate').value = iso(past);
+  document.getElementById('cidIn').value=getCID();
+  document.getElementById('antIn').value=getANT();
+  document.getElementById('chIn').value=getCH();
+  const now=new Date(),p28=new Date(Date.now()-28*864e5);
+  document.getElementById('endDate').value=iso(now);
+  document.getElementById('startDate').value=iso(p28);
+  const cmpS=new Date(Date.now()-56*864e5),cmpE=new Date(Date.now()-29*864e5);
+  document.getElementById('cmpStart').value=iso(cmpS);
+  document.getElementById('cmpEnd').value=iso(cmpE);
 });
 
-/* ---------- google api boot ---------- */
-function gapiInit(){ gapi.load('client', async ()=>{
-  await gapi.client.init({discoveryDocs:[
-    'https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest',
-    'https://youtubeanalytics.googleapis.com/$discovery/rest?version=v2'
-  ]});
-  gapiReady=true; maybeEnable();
+// GAPI boot
+function gapiInit(){gapi.load('client',async()=>{
+  await gapi.client.init({discoveryDocs:['https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest','https://youtubeanalytics.googleapis.com/$discovery/rest?version=v2']});
+  gapiReady=true;tryEnable();
 });}
-window.gapiInit = gapiInit;
-// api.js calls onload; trigger init once it's present
-const _boot=setInterval(()=>{ if(window.gapi){clearInterval(_boot); gapiInit();} },120);
-const _gis=setInterval(()=>{ if(window.google&&google.accounts){clearInterval(_gis); gisReady=true; maybeEnable();} },120);
+window.gapiInit=gapiInit;
+const _b=setInterval(()=>{if(window.gapi){clearInterval(_b);gapiInit();}},100);
+const _g=setInterval(()=>{if(window.google&&google.accounts){clearInterval(_g);gisReady=true;tryEnable();}},100);
+function tryEnable(){if(gapiReady&&gisReady){const b=document.getElementById('signBtn');b.disabled=false;b.textContent='Sign in with Google';}}
 
-function maybeEnable(){
-  const btn=document.getElementById('signBtn');
-  if(gapiReady&&gisReady){ btn.disabled=false; btn.textContent='Sign in with Google'; }
-}
-
-function handleAuthClick(){
-  const cid=getClientId();
-  if(!cid){ switchTab('config'); alert('Add your OAuth Client ID in Setup first.'); return; }
+// Auth
+function handleAuth(){
+  const cid=getCID();
+  if(!cid){openSettings();return;}
   if(!tokenClient){
-    tokenClient=google.accounts.oauth2.initTokenClient({
-      client_id:cid, scope:SCOPES,
-      callback:(resp)=>{ if(resp.error){alert('Auth failed: '+resp.error);return;} accessToken=resp.access_token; gapi.client.setToken({access_token:accessToken}); onSignedIn(); }
-    });
+    tokenClient=google.accounts.oauth2.initTokenClient({client_id:cid,scope:SCOPES,callback:r=>{
+      if(r.error){alert('Auth failed: '+r.error);return;}
+      accessToken=r.access_token;gapi.client.setToken({access_token:accessToken});onSignedIn();
+    }});
   }
-  tokenClient.requestAccessToken({prompt: accessToken? '':'consent'});
+  tokenClient.requestAccessToken({prompt:accessToken?'':'consent'});
 }
 
 async function onSignedIn(){
   document.getElementById('signBtn').textContent='Refresh';
-  const customChannel=getClientChannel();
-  let ch;
-  if(customChannel){
-    // Manager access: look up channel by explicit ID
-    const r=await gapi.client.youtube.channels.list({part:'snippet,statistics',id:customChannel});
-    if(!r.result.items||!r.result.items.length){
-      document.getElementById('dashGate').innerHTML='<div class="empty"><div class="big">Channel not found</div>Check the Channel ID in Setup. It must start with UC and be the exact ID from YouTube Studio.</div>';
-      return;
-    }
-    ch=r.result.items[0];
-  } else {
-    // Own channel
-    const r=await gapi.client.youtube.channels.list({part:'snippet,statistics',mine:true});
-    if(!r.result.items||!r.result.items.length){
-      document.getElementById('dashGate').innerHTML='<div class="empty"><div class="big">No channel found</div>Add the Client Channel ID in Setup if you are managing someone else\'s channel.</div>';
-      return;
-    }
-    ch=r.result.items[0];
-  }
+  const custom=getCH();let ch;
+  try{
+    if(custom){const r=await gapi.client.youtube.channels.list({part:'snippet,statistics',id:custom});if(!r.result.items?.length){alert('Channel ID not found.');return;}ch=r.result.items[0];}
+    else{const r=await gapi.client.youtube.channels.list({part:'snippet,statistics',mine:true});if(!r.result.items?.length){alert('No channel found. Add Channel ID in Setup ⚙.');return;}ch=r.result.items[0];}
+  }catch(e){setStatus('Error: '+((e.result?.error?.message)||e.message));return;}
   channelId=ch.id;
-  document.getElementById('chanChip').style.display='flex';
-  document.getElementById('chanAvatar').src=(ch.snippet.thumbnails.default||{}).url||'';
+  const chip=document.getElementById('chanChip');chip.style.display='flex';
+  document.getElementById('chanAvatar').src=ch.snippet.thumbnails?.default?.url||'';
   document.getElementById('chanName').textContent=ch.snippet.title;
-  document.getElementById('dashGate').style.display='none';
-  document.getElementById('dashBody').style.display='block';
-  loadDashboard();
+  document.getElementById('chanSubs').textContent=fi(ch.statistics?.subscriberCount||0)+' subs';
+  document.getElementById('gateMsg').classList.add('hidden');
+  document.getElementById('dashBody').classList.remove('hidden');
+  load();
 }
 
-/* ---------- date helpers ---------- */
-function iso(d){return d.toISOString().slice(0,10);}
-function currentRange(){return {start:document.getElementById('startDate').value,end:document.getElementById('endDate').value};}
-function daysBetween(a,b){return Math.round((new Date(b)-new Date(a))/864e5)+1;}
+// Settings modal
+function openSettings(){
+  document.getElementById('cidIn').value=getCID();
+  document.getElementById('antIn').value=getANT();
+  document.getElementById('chIn').value=getCH();
+  document.getElementById('settingsModal').classList.add('open');
+}
+function closeSettings(){document.getElementById('settingsModal').classList.remove('open');}
+function handleModalClick(e){if(e.target===document.getElementById('settingsModal'))closeSettings();}
 
-document.getElementById('presetSeg').addEventListener('click',e=>{
-  if(!e.target.dataset.days)return;
-  document.querySelectorAll('#presetSeg button').forEach(b=>b.classList.remove('on'));
+// Compare toggle
+function toggleCmp(){
+  cmpMode=document.getElementById('cmpToggle').checked;
+  document.getElementById('cmpDates').classList.toggle('show',cmpMode);
+}
+
+// Navigation
+function goTo(id){
+  document.getElementById(id)?.scrollIntoView({behavior:'smooth'});
+  document.querySelectorAll('.sb-nav a').forEach(a=>a.classList.toggle('on',a.getAttribute('onclick')?.includes(id)));
+}
+
+// Preset buttons
+document.getElementById('presets').addEventListener('click',e=>{
+  if(!e.target.dataset.d)return;
+  document.querySelectorAll('#presets button').forEach(b=>b.classList.remove('on'));
   e.target.classList.add('on');
-  const d=+e.target.dataset.days;
+  const d=+e.target.dataset.d;
   document.getElementById('endDate').value=iso(new Date());
   document.getElementById('startDate').value=iso(new Date(Date.now()-d*864e5));
-  loadDashboard();
 });
-function customRange(){document.querySelectorAll('#presetSeg button').forEach(b=>b.classList.remove('on'));loadDashboard();}
 
-/* ---------- dashboard load ---------- */
-let trendChart=null;
-async function loadDashboard(){
+function getRange(){return{s:document.getElementById('startDate').value,e:document.getElementById('endDate').value};}
+function getCmpRange(){return{s:document.getElementById('cmpStart').value,e:document.getElementById('cmpEnd').value};}
+
+function ytA(p){return gapi.client.youtubeAnalytics.reports.query(p).then(r=>r.result);}
+
+// Main load
+async function load(){
   if(!channelId)return;
-  const {start,end}=currentRange();
-  const status=document.getElementById('dashStatus');
-  status.innerHTML='<span class="spinner"></span> loading';
+  const{s,e}=getRange();
+  setStatus('Loading…');
+  const ids='channel=='+channelId;
+  const cmp=cmpMode?getCmpRange():null;
   try{
-    const ids='channel=='+channelId;
-    // summary (current + previous period for deltas)
-    const summaryMetrics='views,estimatedMinutesWatched,averageViewDuration,subscribersGained,likes,comments';
-    const cur=await ytA({ids,startDate:start,endDate:end,metrics:summaryMetrics});
-    const span=daysBetween(start,end);
-    const pStart=iso(new Date(new Date(start)-span*864e5)), pEnd=iso(new Date(new Date(start)-864e5));
-    const prev=await ytA({ids,startDate:pStart,endDate:pEnd,metrics:summaryMetrics});
-    renderKPIs(cur.rows?cur.rows[0]:[], prev.rows?prev.rows[0]:[], cur.columnHeaders);
-    // daily trend
-    const daily=await ytA({ids,startDate:start,endDate:end,metrics:'views,estimatedMinutesWatched',dimensions:'day',sort:'day'});
-    renderTrend(daily);
-    // per-video
-    const perVid=await ytA({ids,startDate:start,endDate:end,
-      metrics:'views,estimatedMinutesWatched,averageViewDuration,averageViewPercentage,subscribersGained,likes,comments',
-      dimensions:'video',sort:'-views',maxResults:25});
-    await renderVideos(perVid);
-    status.textContent='updated '+new Date().toLocaleTimeString();
-  }catch(err){
-    status.textContent='';
-    handleErr(err);
-  }
+    const sumM='views,estimatedMinutesWatched,averageViewDuration,subscribersGained,averageViewPercentage';
+    const[cur,daily]=await Promise.all([
+      ytA({ids,startDate:s,endDate:e,metrics:sumM}),
+      ytA({ids,startDate:s,endDate:e,metrics:'views,estimatedMinutesWatched',dimensions:'day',sort:'day'})
+    ]);
+    let prevData=null,cmpDailyData=null;
+    if(cmp){
+      [prevData,cmpDailyData]=await Promise.all([
+        ytA({ids,startDate:cmp.s,endDate:cmp.e,metrics:sumM}),
+        ytA({ids,startDate:cmp.s,endDate:cmp.e,metrics:'views,estimatedMinutesWatched',dimensions:'day',sort:'day'})
+      ]);
+    }else{
+      const sp=days(s,e);
+      const ps=iso(new Date(new Date(s)-sp*864e5)),pe=iso(new Date(new Date(s)-864e5));
+      prevData=await ytA({ids,startDate:ps,endDate:pe,metrics:sumM});
+    }
+    renderKPIs(cur.rows?.[0]||[],prevData?.rows?.[0]||[],cur.columnHeaders,cmp);
+    renderTrend(daily,cmpDailyData,cmp);
+    await Promise.all([loadTraffic(ids,s,e,cmp),loadSearch(ids,s,e),loadVideos(ids,s,e)]);
+    setStatus('Updated '+new Date().toLocaleTimeString()+(cmp?' · Compare: '+cmp.s+' to '+cmp.e:''));
+  }catch(er){setStatus('Error: '+((er.result?.error?.message)||er.message));}
 }
 
-function ytA(params){
-  return gapi.client.youtubeAnalytics.reports.query(params).then(r=>r.result);
-}
-
-/* ---------- KPI render ---------- */
-const KPI_DEFS=[
-  {key:'views',label:'Views',fmt:n=>fmtInt(n)},
-  {key:'estimatedMinutesWatched',label:'Watch time',fmt:n=>fmtInt(Math.round(n/60))+' h'},
-  {key:'averageViewDuration',label:'Avg view',fmt:n=>fmtDur(n)},
-  {key:'subscribersGained',label:'Subs gained',fmt:n=>fmtInt(n)}
+// KPIs with optional compare
+const KDEFS=[
+  {k:'views',l:'Views',f:n=>fi(n)},
+  {k:'estimatedMinutesWatched',l:'Watch time',f:n=>fi(Math.round(n/60))+'h'},
+  {k:'averageViewDuration',l:'Avg view',f:n=>fd(n)},
+  {k:'averageViewPercentage',l:'Avg retention',f:n=>(+n).toFixed(1)+'%'},
+  {k:'subscribersGained',l:'Subs gained',f:n=>fi(n)}
 ];
-function renderKPIs(cur,prev,headers){
-  const idx={}; (headers||[]).forEach((h,i)=>idx[h.name]=i);
-  const box=document.getElementById('kpis'); box.innerHTML='';
-  KPI_DEFS.forEach(def=>{
-    const c=+(cur[idx[def.key]]||0), p=+(prev[idx[def.key]]||0);
-    let delta='—',cls='flat';
-    if(p>0){const pct=((c-p)/p*100); delta=(pct>=0?'+':'')+pct.toFixed(1)+'%'; cls=pct>0.5?'up':pct<-0.5?'down':'flat';}
-    box.insertAdjacentHTML('beforeend',
-      `<div class="kpi"><div class="k-label">${def.label}</div>
-       <div class="k-val">${def.fmt(c)}</div>
-       <div class="k-delta ${cls}">${delta} <span style="color:var(--ink-faint);font-weight:400">vs prev</span></div></div>`);
-  });
+function renderKPIs(cur,prev,headers,cmp){
+  const ix={};(headers||[]).forEach((h,i)=>ix[h.name]=i);
+  document.getElementById('kpis').innerHTML=KDEFS.map(d=>{
+    const c=+(cur[ix[d.k]]||0),p=+(prev[ix[d.k]]||0);
+    let delta='—',cls='fl';
+    if(p>0){const pct=((c-p)/p*100);delta=(pct>=0?'+':'')+pct.toFixed(1)+'%';cls=pct>0.5?'up':pct<-0.5?'dn':'fl';}
+    const cmpLabel=cmp?`<div class="kv2">${d.f(p)}</div><div style="font-size:9px;color:var(--faint);margin-bottom:2px">compare period</div>`:'';
+    const deltaLabel=cmp?`<div class="kd ${cls}">${delta}</div>`:`<div class="kd ${cls}">${delta} <span style="color:var(--faint);font-weight:400">vs prev</span></div>`;
+    return`<div class="kpi"><div class="kl">${d.l}</div><div class="kv">${d.f(c)}</div>${cmpLabel}${deltaLabel}</div>`;
+  }).join('');
 }
 
-/* ---------- trend chart ---------- */
-function renderTrend(data){
-  const rows=data.rows||[];
-  const labels=rows.map(r=>r[0]);
-  const views=rows.map(r=>+r[1]);
-  const mins=rows.map(r=>Math.round(+r[2]/60));
-  if(trendChart)trendChart.destroy();
-  const ctx=document.getElementById('trendChart');
-  trendChart=new Chart(ctx,{type:'line',
-    data:{labels,datasets:[
-      {label:'Views',data:views,borderColor:'#4ADE80',backgroundColor:'rgba(74,222,128,.08)',fill:true,tension:.3,yAxisID:'y',pointRadius:0,borderWidth:2},
-      {label:'Watch time (h)',data:mins,borderColor:'#38BDF8',backgroundColor:'transparent',tension:.3,yAxisID:'y1',pointRadius:0,borderWidth:2}
-    ]},
-    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
-      plugins:{legend:{labels:{color:'#9AA2B1',boxWidth:12,font:{size:12}}}},
-      scales:{
-        x:{ticks:{color:'#6B7280',maxTicksLimit:8,font:{size:11}},grid:{color:'#20242D'}},
-        y:{position:'left',ticks:{color:'#6B7280',font:{size:11}},grid:{color:'#20242D'}},
-        y1:{position:'right',ticks:{color:'#6B7280',font:{size:11}},grid:{drawOnChartArea:false}}
-      }}});
-}
-
-/* ---------- video table (join Analytics + Data API) ---------- */
-async function renderVideos(data){
-  const rows=data.rows||[];
-  const body=document.getElementById('vidBody'); body.innerHTML='';
-  if(!rows.length){body.innerHTML='<tr><td class="l" colspan="10" style="color:var(--ink-faint)">No video data in this range.</td></tr>';return;}
-  const idx={}; data.columnHeaders.forEach((h,i)=>idx[h.name]=i);
-  const vidIds=rows.map(r=>r[idx.video]);
-
-  // fetch titles + thumbnails
-  const meta={};
-  for(let i=0;i<vidIds.length;i+=50){
-    const chunk=vidIds.slice(i,i+50);
-    const mr=await gapi.client.youtube.videos.list({part:'snippet',id:chunk.join(',')});
-    mr.result.items.forEach(it=>meta[it.id]=it.snippet);
+// Trend chart with optional compare overlay
+function renderTrend(p1data,p2data,cmp){
+  const rows1=p1data.rows||[];
+  const datasets=[
+    {label:'Views',data:rows1.map(r=>+r[1]),borderColor:'#4ADE80',backgroundColor:'rgba(74,222,128,.08)',fill:true,tension:.3,yAxisID:'y',pointRadius:0,borderWidth:2},
+    {label:'Watch time (h)',data:rows1.map(r=>Math.round(+r[2]/60)),borderColor:'#38BDF8',backgroundColor:'transparent',tension:.3,yAxisID:'y1',pointRadius:0,borderWidth:2}
+  ];
+  if(p2data&&cmp){
+    const rows2=p2data.rows||[];
+    datasets.push({label:'Views (compare)',data:rows2.map(r=>+r[1]),borderColor:'#4ADE80',backgroundColor:'transparent',tension:.3,yAxisID:'y',pointRadius:0,borderWidth:1.5,borderDash:[4,3],opacity:.6});
+    datasets.push({label:'Watch h (compare)',data:rows2.map(r=>Math.round(+r[2]/60)),borderColor:'#38BDF8',backgroundColor:'transparent',tension:.3,yAxisID:'y1',pointRadius:0,borderWidth:1.5,borderDash:[4,3]});
   }
+  const labels=rows1.map(r=>r[0].slice(5));
+  if(trendChart)trendChart.destroy();
+  trendChart=new Chart(document.getElementById('trendChart'),{type:'line',
+    data:{labels,datasets},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{legend:{labels:{color:'#8A95A8',boxWidth:10,font:{size:10},filter:i=>!i.text.includes('compare')||!!cmp}}},
+      scales:{x:{ticks:{color:'#55606E',maxTicksLimit:9,font:{size:10}},grid:{color:'#1E2330'}},
+        y:{position:'left',ticks:{color:'#55606E',font:{size:10}},grid:{color:'#1E2330'}},
+        y1:{position:'right',ticks:{color:'#55606E',font:{size:10}},grid:{drawOnChartArea:false}}}}});
+}
 
-  // impressions + CTR come from a separate analytics call (not combinable with the above in one query)
-  let impMap={};
+// Traffic sources with optional compare
+async function loadTraffic(ids,s,e,cmp){
   try{
-    const impData=await ytA({ids:'channel=='+channelId,startDate:currentRange().start,endDate:currentRange().end,
-      metrics:'impressions,impressionsClickThroughRate',dimensions:'video',maxResults:200});
-    const ii={}; (impData.columnHeaders||[]).forEach((h,i)=>ii[h.name]=i);
-    (impData.rows||[]).forEach(r=>{impMap[r[ii.video]]={imp:+r[ii.impressions]||0,ctr:+r[ii.impressionsClickThroughRate]||0};});
-  }catch(e){/* impressions may be unavailable for some channels/ranges */}
+    const promises=[ytA({ids,startDate:s,endDate:e,metrics:'views',dimensions:'insightTrafficSourceType',sort:'-views'})];
+    if(cmp)promises.push(ytA({ids,startDate:cmp.s,endDate:cmp.e,metrics:'views',dimensions:'insightTrafficSourceType',sort:'-views'}));
+    const results=await Promise.all(promises);
+    const d=results[0],d2=results[1]||null;
+    const rows=(d.rows||[]).slice(0,9);
+    const ix={};(d.columnHeaders||[]).forEach((h,i)=>ix[h.name]=i);
+    const total=rows.reduce((a,r)=>a+(+r[ix.views]||0),0)||1;
+    let cmpMap={};
+    if(d2){
+      const ix2={};(d2.columnHeaders||[]).forEach((h,i)=>ix2[h.name]=i);
+      const tot2=(d2.rows||[]).reduce((a,r)=>a+(+r[ix2.views]||0),0)||1;
+      (d2.rows||[]).forEach(r=>{cmpMap[r[ix2.insightTrafficSourceType]]=((+r[ix2.views]||0)/tot2*100).toFixed(1);});
+    }
+    const html=rows.map((r,i)=>{
+      const src=r[ix.insightTrafficSourceType],v=+r[ix.views]||0,pct=((v/total)*100).toFixed(1);
+      const col=TC[i%TC.length];
+      const cmpPct=cmpMap[src];
+      const diff=cmpPct?(+pct-+cmpPct).toFixed(1):null;
+      const diffHtml=diff!==null?`<span class="src-cmp" title="compare">${diff>=0?'+':''}${diff}%</span>`:'';
+      return`<div class="src-row"><span class="src-lbl">${TL[src]||src}</span><div class="src-track"><div class="src-fill" style="width:${pct}%;background:${col}"></div></div><span class="src-pct">${pct}%</span>${diffHtml}</div>`;
+    }).join('');
+    document.getElementById('srcChart').innerHTML=html;
+    document.getElementById('srcDetail').innerHTML=html;
+    document.getElementById('srcInsight').innerHTML=rows.slice(0,4).map((r,i)=>{
+      const src=r[ix.insightTrafficSourceType],ins=SI[src]||'';
+      if(!ins)return'';
+      return`<div style="margin-bottom:10px"><div style="font-size:11.5px;font-weight:600;color:${TC[i%TC.length]}">${TL[src]||src}</div><div style="font-size:11px;color:var(--dim);margin-top:3px;line-height:1.5">${ins}</div></div>`;
+    }).join('');
+  }catch(e){document.getElementById('srcChart').innerHTML='<span style="color:var(--faint);font-size:11px">Traffic data unavailable</span>';}
+}
 
-  rows.forEach(r=>{
-    const vid=r[idx.video], s=meta[vid]||{title:'(unavailable)',thumbnails:{}};
-    const views=+r[idx.views], avgPct=+r[idx.averageViewPercentage]||0;
-    const imp=impMap[vid]||{imp:0,ctr:0};
-    const thumb=(s.thumbnails.default||{}).url||'';
-    // bottleneck flags
-    let flag='';
-    if(imp.ctr && imp.ctr<3) flag='<span class="flag ctr">low CTR</span>';
-    else if(avgPct && avgPct<35) flag='<span class="flag ret">low retention</span>';
-    else if(avgPct>55 && imp.ctr>6) flag='<span class="flag good">strong</span>';
-    body.insertAdjacentHTML('beforeend',
-      `<tr>
-        <td class="l"><div class="vid-cell"><img src="${thumb}" alt=""><span title="${escapeHtml(s.title)}">${escapeHtml(s.title)}${flag}</span></div></td>
-        <td>${fmtInt(views)}</td>
-        <td>${(+r[idx.estimatedMinutesWatched]/60).toFixed(1)}</td>
-        <td>${fmtDur(+r[idx.averageViewDuration])}</td>
-        <td>${avgPct.toFixed(1)}%</td>
-        <td>${imp.imp?fmtInt(imp.imp):'—'}</td>
-        <td>${imp.ctr?imp.ctr.toFixed(1)+'%':'—'}</td>
-        <td>${fmtInt(+r[idx.subscribersGained])}</td>
-        <td>${fmtInt(+r[idx.likes])}</td>
-        <td>${fmtInt(+r[idx.comments])}</td>
-      </tr>`);
+// Search keywords
+async function loadSearch(ids,s,e){
+  try{
+    const d=await ytA({ids,startDate:s,endDate:e,metrics:'views',dimensions:'insightTrafficSourceDetail',filters:'insightTrafficSourceType==YT_SEARCH',sort:'-views',maxResults:25});
+    const rows=d.rows||[];const ix={};(d.columnHeaders||[]).forEach((h,i)=>ix[h.name]=i);
+    if(!rows.length){document.getElementById('kwList').innerHTML='<span style="color:var(--faint);font-size:11.5px">No search terms in this range. Widen the date range.</span>';return;}
+    const max=+rows[0][ix.views]||1;
+    document.getElementById('kwList').innerHTML=rows.map(r=>{
+      const t=r[ix.insightTrafficSourceDetail],v=+r[ix.views]||0;
+      return`<div class="kw-row"><span class="kw-term" title="${esc(t)}">${esc(t)}</span><div class="kw-track"><div class="kw-fill" style="width:${(v/max*100).toFixed(0)}%"></div></div><span class="kw-ct">${fi(v)}</span></div>`;
+    }).join('');
+  }catch(e){document.getElementById('kwList').innerHTML='<span style="color:var(--faint);font-size:11.5px">Search term data unavailable</span>';}
+}
+
+// Videos
+async function loadVideos(ids,s,e){
+  const pv=await ytA({ids,startDate:s,endDate:e,metrics:'views,estimatedMinutesWatched,averageViewDuration,averageViewPercentage,subscribersGained,likes,comments',dimensions:'video',sort:'-views',maxResults:25});
+  const ix={};(pv.columnHeaders||[]).forEach((h,i)=>ix[h.name]=i);
+  const rows=pv.rows||[];const vids=rows.map(r=>r[ix.video]);
+  const meta={};
+  for(let i=0;i<vids.length;i+=50){
+    const mr=await gapi.client.youtube.videos.list({part:'snippet,statistics',id:vids.slice(i,i+50).join(',')});
+    mr.result.items.forEach(it=>{meta[it.id]={...it.snippet,st:it.statistics};});
+  }
+  let imp={};
+  try{const id2=await ytA({ids,startDate:s,endDate:e,metrics:'impressions,impressionsClickThroughRate',dimensions:'video',maxResults:200});const ii={};(id2.columnHeaders||[]).forEach((h,i)=>ii[h.name]=i);(id2.rows||[]).forEach(r=>{imp[r[ii.video]]={i:+r[ii.impressions]||0,c:+r[ii.impressionsClickThroughRate]||0};});}catch(e){}
+  loadedVideos=rows.map(r=>{
+    const vid=r[ix.video];
+    return{id:vid,title:(meta[vid]||{}).title||'(unavailable)',thumb:((meta[vid]||{}).thumbnails||{}).medium||((meta[vid]||{}).thumbnails||{}).default||{},
+      views:+r[ix.views],watchMin:+r[ix.estimatedMinutesWatched],avgDur:+r[ix.averageViewDuration],avgPct:+r[ix.averageViewPercentage]||0,
+      subs:+r[ix.subscribersGained],likes:+r[ix.likes],comments:+r[ix.comments],
+      imp:(imp[vid]||{}).i||0,ctr:(imp[vid]||{}).c||0,description:(meta[vid]||{}).description||'',tags:(meta[vid]||{}).tags||[]};
+  });
+  renderVids();
+}
+
+function renderVids(){
+  const body=document.getElementById('vidBody');body.innerHTML='';
+  loadedVideos.forEach((v,idx)=>{
+    const rc=v.avgPct>50?'var(--accent)':v.avgPct>30?'var(--warn)':'var(--bad)';
+    const cc=v.ctr>5?'var(--accent)':v.ctr>2?'var(--warn)':'var(--bad)';
+    body.insertAdjacentHTML('beforeend',`
+      <tr class="vrow" id="vr${idx}" onclick="toggleExp(${idx})">
+        <td class="l"><div class="vc"><img src="${v.thumb.url||''}" alt=""><span class="vt" title="${esc(v.title)}">${esc(v.title.length>44?v.title.slice(0,44)+'…':v.title)}</span></div></td>
+        <td>${fi(v.views)}</td><td>${(v.watchMin/60).toFixed(1)}</td><td>${fd(v.avgDur)}</td>
+        <td><span style="color:${rc};font-weight:600">${v.avgPct.toFixed(1)}%</span></td>
+        <td>${v.imp?fi(v.imp):'—'}</td>
+        <td><span style="color:${cc};font-weight:600">${v.ctr?v.ctr.toFixed(1)+'%':'—'}</span></td>
+        <td>${fi(v.subs)}</td><td>${botFlag(v)}</td>
+      </tr>
+      <tr class="exprow hidden" id="exp${idx}"><td colspan="9"><div class="expinner" id="expIn${idx}"></div></td></tr>`);
   });
 }
 
-/* ---------- SEO tab ---------- */
-function extractVideoId(input){
+function botFlag(v){
+  if(v.imp&&v.ctr<2)return'<span class="flag ctr">Fix title/thumb</span>';
+  if(v.avgPct<30)return'<span class="flag ret">Low retention</span>';
+  if(v.imp&&v.ctr<4&&v.avgPct<35)return'<span class="flag ret">Weak hook</span>';
+  if(v.avgPct>50&&v.ctr>5&&v.subs<2)return'<span class="flag cta">Add CTA</span>';
+  if(v.avgPct>50&&v.ctr>5)return'<span class="flag good">Strong</span>';
+  return'<span style="color:var(--faint);font-size:10px">Monitor</span>';
+}
+
+async function toggleExp(idx){
+  const row=document.getElementById(`vr${idx}`);
+  const exp=document.getElementById(`exp${idx}`);
+  const inner=document.getElementById(`expIn${idx}`);
+  const isOpen=!exp.classList.contains('hidden');
+  document.querySelectorAll('.vrow').forEach(r=>r.classList.remove('exp'));
+  document.querySelectorAll('.exprow').forEach(r=>r.classList.add('hidden'));
+  if(isOpen)return;
+  row.classList.add('exp');exp.classList.remove('hidden');
+  inner.innerHTML='<span class="spinner"></span> loading…';
+  const v=loadedVideos[idx];const{s,e}=getRange();const ids='channel=='+channelId;
+  let rh='',ch='';
+  try{const ret=await ytA({ids,startDate:s,endDate:e,metrics:'audienceWatchRatio',dimensions:'elapsedVideoTimeRatio',filters:'video=='+v.id,sort:'elapsedVideoTimeRatio'});rh=buildRet(ret,v);}
+  catch(e){rh='<div style="color:var(--faint);font-size:11.5px">Retention curve unavailable.</div>';}
+  try{const cr=await gapi.client.youtube.commentThreads.list({part:'snippet',videoId:v.id,maxResults:50,order:'relevance'});const comments=(cr.result.items||[]).map(it=>it.snippet.topLevelComment.snippet.textDisplay);ch=buildComm(comments,v);}
+  catch(e){ch='<div style="color:var(--faint);font-size:11.5px">Comments unavailable.</div>';}
+  inner.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:13px">${rh}${ch}</div>`;
+}
+
+function buildRet(data,v){
+  const rows=data.rows||[];if(!rows.length)return'<div style="color:var(--faint);font-size:11.5px">No retention data.</div>';
+  const cid='rc'+Date.now();
+  setTimeout(()=>{
+    const ctx=document.getElementById(cid);if(!ctx)return;
+    new Chart(ctx,{type:'line',data:{labels:rows.map(r=>{const p=Math.round(+r[0]*100);return p%10===0?p+'%':'';}),datasets:[{label:'% watching',data:rows.map(r=>Math.round(+r[1]*100)),borderColor:'#4ADE80',backgroundColor:'rgba(74,222,128,.1)',fill:true,tension:.4,pointRadius:0,borderWidth:2}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw+'% watching'}}},
+        scales:{x:{ticks:{color:'#55606E',font:{size:9}},grid:{color:'#1E2330'}},y:{min:0,max:100,ticks:{color:'#55606E',font:{size:9},callback:v=>v+'%'},grid:{color:'#1E2330'}}}}});
+  },80);
+  let mx=0,at=0;for(let i=1;i<rows.length;i++){const dr=+rows[i-1][1]-+rows[i][1];if(dr>mx){mx=dr;at=Math.round(+rows[i][0]*100);}}
+  return`<div><div style="font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px">Retention · ${v.avgPct.toFixed(1)}% avg</div><div class="cw-sm"><canvas id="${cid}"></canvas></div>${mx>0.04?`<div style="font-size:11px;color:var(--warn);margin-top:7px">Biggest drop at ${at}% — review that moment.</div>`:''}</div>`;
+}
+
+function buildComm(comments,v){
+  const key=getANT();
+  const preview=comments.slice(0,2).map(c=>`<div style="font-size:11px;color:var(--dim);background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:7px 9px;margin-bottom:5px;line-height:1.4">${esc((c||'').replace(/<[^>]+>/g,'').slice(0,110))}</div>`).join('');
+  const safe=JSON.stringify(comments).replace(/'/g,'&#39;');
+  const safeT=JSON.stringify(v.title).replace(/'/g,'&#39;');
+  return`<div><div style="font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px">Comments (${comments.length})</div>${preview}${comments.length&&key?`<button class="bsm" onclick="analyseComm(${safe},${safeT},this)">Analyse themes with AI</button>`:''}${!key&&comments.length?'<div style="font-size:10.5px;color:var(--faint);margin-top:4px">Add API key in ⚙ to analyse themes</div>':''}<div class="cout" style="margin-top:7px"></div></div>`;
+}
+
+async function analyseComm(comments,title,btn){
+  const out=btn.closest('div').querySelector('.cout');btn.disabled=true;btn.textContent='Analysing…';
+  const key=getANT();
+  const prompt=`Video: "${title}"\n\nTop comments:\n${comments.slice(0,50).map((c,i)=>`${i+1}. ${(c||'').replace(/<[^>]+>/g,'').slice(0,160)}`).join('\n')}\n\nFind 3 themes. Each: type (question/praise/request/complaint), title, 1-sentence summary, one video idea.\nReturn ONLY valid JSON: {"themes":[{"type":"...","title":"...","summary":"...","idea":"..."}]}`;
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:700,messages:[{role:'user',content:prompt}]})});
+    const d=await r.json();if(d.error)throw new Error(d.error.message);
+    let txt=d.content.filter(b=>b.type==='text').map(b=>b.text).join('').trim().replace(/```json|```/g,'').trim();
+    const res=JSON.parse(txt);
+    out.innerHTML=(res.themes||[]).map(t=>`<div class="tcard"><span class="tbadge ${t.type}">${t.type}</span><h5>${esc(t.title)}</h5><p>${esc(t.summary)}</p>${t.idea?`<p style="color:var(--blue);font-size:10.5px;margin-top:3px">Idea: ${esc(t.idea)}</p>`:''}</div>`).join('');
+  }catch(e){out.innerHTML='<span style="font-size:11px;color:var(--bad)">Failed: '+esc(e.message)+'</span>';}
+  btn.remove();
+}
+
+// SEO
+function extractVid(input){
   input=input.trim();
   const m=input.match(/(?:v=|youtu\.be\/|shorts\/|embed\/)([A-Za-z0-9_-]{11})/);
-  if(m)return m[1];
-  if(/^[A-Za-z0-9_-]{11}$/.test(input))return input;
-  return null;
+  if(m)return m[1];if(/^[A-Za-z0-9_-]{11}$/.test(input))return input;return null;
 }
-
+function scoreTitle(t){
+  t=t||'';const items=[];let s=0;const len=t.length;
+  if(len>=45&&len<=60){s+=25;items.push({p:1,tx:`Length ${len} chars (ideal 45-60)`});}
+  else if(len>60){s+=8;items.push({p:0,tx:`Too long (${len} chars)`});}
+  else{s+=10;items.push({p:2,tx:`Short (${len} chars)`});}
+  if(/\d/.test(t)){s+=10;items.push({p:1,tx:'Has a number'});}else items.push({p:0,tx:'Add a number'});
+  const pw=['how','why','best','tips','guide','never','mistake','ultimate','secret','proven'];
+  const fw=pw.filter(w=>t.toLowerCase().includes(w));
+  if(fw.length){s+=10;items.push({p:1,tx:`Power word: "${fw[0]}"`});}else items.push({p:0,tx:'Add a power word'});
+  if(t.includes('?')){s+=8;items.push({p:1,tx:'Question format'});}
+  if(/\[|\(/.test(t)){s+=8;items.push({p:1,tx:'Brackets (CTR boost)'});}
+  if(t.split(' ').slice(0,3).join(' ').length>10){s+=15;items.push({p:1,tx:'Keyword front-loaded'});}
+  else items.push({p:0,tx:'Put keyword in first 3 words'});
+  return{s:Math.min(Math.max(s,0),100),items};
+}
+function scoreDesc(d){
+  d=d||'';const items=[];let s=0;
+  if(d.length>500){s+=25;items.push({p:1,tx:`${d.length} chars`});}
+  else if(d.length>150){s+=10;items.push({p:2,tx:`Short (${d.length} chars — aim 500+)`});}
+  else items.push({p:0,tx:`Very short (${d.length} chars)`});
+  if(d.slice(0,150).length===150){s+=20;items.push({p:1,tx:'First 150 chars filled'});}
+  if(/\d{1,2}:\d{2}/.test(d)){s+=20;items.push({p:1,tx:'Has timestamps'});}else items.push({p:0,tx:'Add timestamps'});
+  if(/https?:\/\//.test(d)){s+=15;items.push({p:1,tx:'Has links'});}else items.push({p:2,tx:'Add links'});
+  if(/#\w+/.test(d)){s+=10;items.push({p:1,tx:'Has hashtags'});}else items.push({p:2,tx:'Add hashtags'});
+  return{s:Math.min(Math.max(s,0),100),items};
+}
+function drawScore(score,items,cid){
+  const cls=score>=70?'g':score>=45?'o':'r';
+  document.getElementById(cid).innerHTML=`<div class="shead"><div class="sring ${cls}">${score}</div><div style="font-size:11px;color:var(--dim)">${score>=70?'Good':score>=45?'Average':'Needs work'}</div></div>`+
+    items.map(it=>`<div class="si"><div class="sdot ${it.p===1?'p':it.p===0?'f':'w'}">${it.p===1?'✓':it.p===0?'✕':'!'}</div><span>${esc(it.tx)}</span></div>`).join('');
+}
 async function runSEO(){
   const note=document.getElementById('seoNote');
-  const vid=extractVideoId(document.getElementById('seoInput').value);
-  if(!vid){show(note,'Could not read a video ID from that. Paste a full YouTube URL or the 11-character ID.');return;}
-  if(!accessToken){show(note,'Sign in first (top-right) so the tool can read the video metadata.');return;}
-  const key=getAnthropicKey();
-  if(!key){show(note,'Add an Anthropic API key in Setup to generate suggestions. The dashboard works without it; only this tab needs it.');return;}
-  note.style.display='none';
-
-  document.getElementById('seoResults').style.display='none';
-  document.getElementById('seoCurrent').innerHTML='<div class="panel"><span class="spinner"></span> reading video…</div>';
-
+  const vid=extractVid(document.getElementById('seoInput').value);
+  if(!vid){note.textContent='Paste a YouTube URL or 11-character video ID.';note.classList.remove('hidden');return;}
+  if(!accessToken){note.textContent='Sign in first.';note.classList.remove('hidden');return;}
+  note.classList.add('hidden');document.getElementById('seoRes').style.display='none';document.getElementById('seoScores').classList.add('hidden');
+  document.getElementById('seoCur').innerHTML='<span class="spinner"></span>';
   const vr=await gapi.client.youtube.videos.list({part:'snippet,statistics',id:vid});
-  if(!vr.result.items.length){document.getElementById('seoCurrent').innerHTML='<div class="panel">Video not found.</div>';return;}
-  const s=vr.result.items[0].snippet, st=vr.result.items[0].statistics;
-  document.getElementById('seoCurrent').innerHTML=
-    `<div class="current"><b>Current title:</b> ${escapeHtml(s.title)}<br>
-     <b>Current tags:</b> ${(s.tags||[]).join(', ')||'none'}<br>
-     <b>Views:</b> ${fmtInt(+st.viewCount||0)} · <b>Likes:</b> ${fmtInt(+st.likeCount||0)}</div>`;
-
-  document.getElementById('seoCurrent').insertAdjacentHTML('beforeend','<div class="panel" id="seoLoad"><span class="spinner"></span> generating suggestions…</div>');
-
-  const prompt=`You are a YouTube SEO strategist. Analyse this video's metadata and improve it for discovery and click-through, following real YouTube SEO practice (front-load primary keyword in title, keep titles under ~60 chars where possible, put strongest keywords in the first two lines of the description, use specific searchable phrases as tags rather than generic single words).
-
-Current title: ${s.title}
-Current description: ${(s.description||'').slice(0,1500)}
-Current tags: ${(s.tags||[]).join(', ')}
-
-Return ONLY valid JSON, no markdown, in this exact shape:
-{"titles":["...","...","..."],"description":"full rewritten description","tags":["tag1","tag2",...up to 20],"rationale":"2-4 sentences on the biggest problems and what you changed and why"}`;
-
+  if(!vr.result.items.length){document.getElementById('seoCur').innerHTML='<div style="color:var(--bad)">Video not found.</div>';return;}
+  const sn=vr.result.items[0].snippet,st=vr.result.items[0].statistics;
+  const thumbUrl=`https://i.ytimg.com/vi/${vid}/hqdefault.jpg`;
+  document.getElementById('seoCur').innerHTML=`<div style="font-size:12px;color:var(--dim);background:var(--p2);border-radius:7px;padding:10px;margin-bottom:11px;line-height:1.5"><b style="color:var(--ink)">${esc(sn.title)}</b><br><span style="color:var(--faint)">Tags: ${(sn.tags||[]).slice(0,5).join(', ')||'none'} · Views: ${fi(+st.viewCount||0)}</span></div>`;
+  const ts=scoreTitle(sn.title),ds=scoreDesc(sn.description||'');
+  document.getElementById('seoScores').classList.remove('hidden');
+  drawScore(ts.s,ts.items,'tScore');drawScore(ds.s,ds.items,'dScore');
+  const key=getANT();
+  if(!key){note.textContent='Scores run without API key. Add Anthropic key in ⚙ for AI title/description/tag suggestions.';note.classList.remove('hidden');return;}
+  document.getElementById('seoCur').insertAdjacentHTML('beforeend','<div id="seoLoad" style="color:var(--faint);font-size:12px"><span class="spinner"></span> generating suggestions…</div>');
+  const prompt=`YouTube SEO strategist. Improve metadata for discovery and CTR.\n\nTitle: ${sn.title}\nDescription: ${(sn.description||'').slice(0,1400)}\nTags: ${(sn.tags||[]).join(', ')}\nViews: ${st.viewCount||0}\n\nRules: front-load keyword in title first 2-3 words, 45-60 chars, first 150 chars description must include keywords, tags = specific search phrases not single words.\n\nAssess thumbnail at ${thumbUrl} for face/emotion, text readability, contrast, focal subject.\n\nReturn ONLY valid JSON:\n{"titles":["...","...","..."],"description":"full rewrite","tags":["phrase 1",...max 20],"thumbnail":"2-3 sentences","rationale":"2-3 sentences"}`;
   try{
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1500,messages:[{role:'user',content:prompt}]})
-    });
-    const data=await resp.json();
-    if(data.error){throw new Error(data.error.message||'API error');}
-    let txt=data.content.filter(b=>b.type==='text').map(b=>b.text).join('').trim();
-    txt=txt.replace(/```json|```/g,'').trim();
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:2000,messages:[{role:'user',content:prompt}]})});
+    const d=await r.json();if(d.error)throw new Error(d.error.message);
+    let txt=d.content.filter(b=>b.type==='text').map(b=>b.text).join('').trim().replace(/```json|```/g,'').trim();
     const out=JSON.parse(txt);
-    document.getElementById('seoLoad').remove();
-    renderSEO(out);
-  }catch(e){
-    document.getElementById('seoLoad').innerHTML='Suggestion generation failed: '+escapeHtml(e.message);
-  }
+    document.getElementById('seoLoad')?.remove();
+    document.getElementById('seoTitles').innerHTML=(out.titles||[]).map(x=>`<div class="opt"><span>${esc(x)}</span><button class="cb" onclick="cp(${JSON.stringify(x).replace(/"/g,'&quot;')})">copy</button></div>`).join('');
+    document.getElementById('seoTags').innerHTML=(out.tags||[]).map(x=>`<span>${esc(x)}</span>`).join('');
+    document.getElementById('seoDesc').innerText=out.description||'';
+    document.getElementById('seoThumb').innerText=out.thumbnail||'';
+    document.getElementById('seoRat').innerText=out.rationale||'';
+    document.getElementById('seoRes').style.display='block';
+  }catch(er){const el=document.getElementById('seoLoad');if(el)el.innerHTML='<span style="color:var(--bad)">Failed: '+esc(er.message)+'</span>';}
 }
 
-function renderSEO(out){
-  const t=document.getElementById('seoTitles'); t.innerHTML='';
-  (out.titles||[]).forEach(x=>t.insertAdjacentHTML('beforeend',
-    `<div class="opt"><span>${escapeHtml(x)}</span><button class="copy" onclick="copyText(${JSON.stringify(x).replace(/"/g,'&quot;')})">copy</button></div>`));
-  const tg=document.getElementById('seoTags'); tg.innerHTML='';
-  (out.tags||[]).forEach(x=>tg.insertAdjacentHTML('beforeend',`<span>${escapeHtml(x)}</span>`));
-  document.getElementById('seoDesc').innerText=out.description||'';
-  document.getElementById('seoRationale').innerText=out.rationale||'';
-  document.getElementById('seoResults').style.display='block';
-}
-
-/* ---------- utils ---------- */
-function switchTab(v){
-  document.querySelectorAll('.view').forEach(el=>el.classList.remove('on'));
-  document.getElementById('view-'+v).classList.add('on');
-  document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));
-}
-function fmtInt(n){return (+n||0).toLocaleString();}
-function fmtDur(sec){sec=Math.round(+sec||0);const m=Math.floor(sec/60),s=sec%60;return m+':'+String(s).padStart(2,'0');}
-function escapeHtml(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
-function copyText(t){navigator.clipboard.writeText(t);}
-function show(el,msg){el.textContent=msg;el.style.display='block';}
-function handleErr(err){
-  const msg=(err&&err.result&&err.result.error&&err.result.error.message)||err.message||'Unknown error';
-  document.getElementById('dashStatus').innerHTML='<span style="color:var(--bad)">'+escapeHtml(msg)+'</span>';
+// Digest
+async function genDigest(){
+  const key=getANT();const out=document.getElementById('digestOut');
+  if(!key){out.innerHTML='<div class="note">Add Anthropic API key in ⚙ Setup.</div>';return;}
+  if(!channelId){out.innerHTML='<div class="note">Sign in first.</div>';return;}
+  const btn=document.getElementById('digestBtn');btn.disabled=true;btn.textContent='Generating…';
+  out.innerHTML='<div style="color:var(--faint);font-size:12px;margin-top:10px"><span class="spinner"></span> pulling data…</div>';
+  const now=iso(new Date());const w1e=now,w1s=iso(new Date(Date.now()-7*864e5));
+  const w2e=iso(new Date(Date.now()-8*864e5)),w2s=iso(new Date(Date.now()-14*864e5));
+  const ids='channel=='+channelId;
+  const m='views,estimatedMinutesWatched,averageViewDuration,averageViewPercentage,subscribersGained,likes,comments';
+  try{
+    const[cur,prev,traf,srch,top]=await Promise.all([
+      ytA({ids,startDate:w1s,endDate:w1e,metrics:m}),ytA({ids,startDate:w2s,endDate:w2e,metrics:m}),
+      ytA({ids,startDate:w1s,endDate:w1e,metrics:'views',dimensions:'insightTrafficSourceType',sort:'-views'}).catch(()=>({rows:[],columnHeaders:[]})),
+      ytA({ids,startDate:w1s,endDate:w1e,metrics:'views',dimensions:'insightTrafficSourceDetail',filters:'insightTrafficSourceType==YT_SEARCH',sort:'-views',maxResults:5}).catch(()=>({rows:[],columnHeaders:[]})),
+      ytA({ids,startDate:w1s,endDate:w1e,metrics:'views,averageViewPercentage,impressionsClickThroughRate',dimensions:'video',sort:'-views',maxResults:5}).catch(()=>({rows:[],columnHeaders:[]}))
+    ]);
+    const ci={};(cur.columnHeaders||[]).forEach((h,i)=>ci[h.name]=i);const pi={};(prev.columnHeaders||[]).forEach((h,i)=>pi[h.name]=i);
+    const ti={};(traf.columnHeaders||[]).forEach((h,i)=>ti[h.name]=i);const si={};(srch.columnHeaders||[]).forEach((h,i)=>si[h.name]=i);const vi={};(top.columnHeaders||[]).forEach((h,i)=>vi[h.name]=i);
+    const cr=cur.rows?.[0]||[],pr=prev.rows?.[0]||[];
+    const topSrc=(traf.rows||[]).slice(0,3).map(r=>`${TL[r[ti.insightTrafficSourceType]]||r[ti.insightTrafficSourceType]}: ${fi(+r[ti.views]||0)} views`).join(', ')||'unavailable';
+    const topKw=(srch.rows||[]).slice(0,5).map(r=>r[si.insightTrafficSourceDetail]).join(', ')||'none';
+    let topVids='';
+    if(top.rows?.length){
+      const vids=top.rows.map(r=>r[vi.video]).filter(Boolean);
+      if(vids.length){const vm=await gapi.client.youtube.videos.list({part:'snippet',id:vids.join(',')});const nm={};vm.result.items.forEach(it=>nm[it.id]=it.snippet.title);
+        topVids=top.rows.map(r=>`"${nm[r[vi.video]]||'?'}" — ${fi(+r[vi.views]||0)} views, ${(+r[vi.averageViewPercentage]||0).toFixed(1)}% retention, ${(+r[vi.impressionsClickThroughRate]||0).toFixed(1)}% CTR`).join('\n');}
+    }
+    const cv=+cr[ci.views]||0,pv=+pr[pi.views]||0;
+    const prompt=`YouTube growth manager writing a weekly brief for your client. Direct, specific, no bullet points, no headers. 3 short paragraphs.\n\nWeek: ${w1s} to ${w1e}\nViews: ${fi(cv)} (prev: ${fi(pv)}, ${pv>0?((cv-pv)/pv*100).toFixed(1)+'%':'first week'})\nWatch: ${Math.round((+cr[ci.estimatedMinutesWatched]||0)/60)}h (prev: ${Math.round((+pr[pi.estimatedMinutesWatched]||0)/60)}h)\nRetention: ${(+cr[ci.averageViewPercentage]||0).toFixed(1)}% (prev: ${(+pr[pi.averageViewPercentage]||0).toFixed(1)}%)\nSubs: ${+cr[ci.subscribersGained]||0} (prev: ${+pr[pi.subscribersGained]||0})\nTop sources: ${topSrc}\nTop search terms: ${topKw}\nTop videos:\n${topVids||'unavailable'}\n\nParagraph 1: what happened. Paragraph 2: why. Paragraph 3: 2-3 specific actions for next week.`;
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:700,messages:[{role:'user',content:prompt}]})});
+    const d=await r.json();if(d.error)throw new Error(d.error.message);
+    const txt=d.content.filter(b=>b.type==='text').map(b=>b.text).join('');
+    out.innerHTML=`<div class="dout">${esc(txt)}</div><button class="bsm" style="margin-top:9px" onclick="cp(document.querySelector('.dout').innerText)">Copy</button>`;
+  }catch(er){out.innerHTML='<div class="note">Failed: '+esc(er.message)+'</div>';}
+  btn.disabled=false;btn.textContent='Regenerate';
 }
 </script>
 </body>
