@@ -160,6 +160,14 @@
         <input id="anthropicKeyInput" type="password" placeholder="sk-ant-…" oninput="saveAnthropicKey()">
       </div>
     </div>
+    <div class="setup">
+      <h3>Client channel</h3>
+      <p>If you manage a channel you do not own (Manager access), enter its Channel ID here. Find it in YouTube Studio → Settings → Channel → Advanced Settings. It starts with UC. Leave blank to use your own channel.</p>
+      <div class="field">
+        <label>Client Channel ID (optional)</label>
+        <input id="clientChannelInput" placeholder="UCxxxxxxxxxxxxxxxxxxxxxxxx" oninput="saveClientChannel()">
+      </div>
+    </div>
   </section>
 
   <!-- ================= INSIGHTS ================= -->
@@ -269,12 +277,15 @@ let tokenClient, gapiReady=false, gisReady=false, accessToken=null, channelId=nu
 
 function saveClientId(){ localStorage.setItem('ytgm_client_id', document.getElementById('clientIdInput').value.trim()); }
 function saveAnthropicKey(){ localStorage.setItem('ytgm_anthropic', document.getElementById('anthropicKeyInput').value.trim()); }
+function saveClientChannel(){ localStorage.setItem('ytgm_channel', document.getElementById('clientChannelInput').value.trim()); }
 function getClientId(){ return (localStorage.getItem('ytgm_client_id')||'').trim(); }
 function getAnthropicKey(){ return (localStorage.getItem('ytgm_anthropic')||'').trim(); }
+function getClientChannel(){ return (localStorage.getItem('ytgm_channel')||'').trim(); }
 
 window.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('clientIdInput').value = getClientId();
   document.getElementById('anthropicKeyInput').value = getAnthropicKey();
+  document.getElementById('clientChannelInput').value = getClientChannel();
   const today=new Date(), past=new Date(Date.now()-28*864e5);
   document.getElementById('endDate').value = iso(today);
   document.getElementById('startDate').value = iso(past);
@@ -312,10 +323,28 @@ function handleAuthClick(){
 
 async function onSignedIn(){
   document.getElementById('signBtn').textContent='Refresh';
-  const r=await gapi.client.youtube.channels.list({part:'snippet,statistics,contentDetails',mine:true});
-  const ch=r.result.items[0]; channelId=ch.id;
+  const customChannel=getClientChannel();
+  let ch;
+  if(customChannel){
+    // Manager access: look up channel by explicit ID
+    const r=await gapi.client.youtube.channels.list({part:'snippet,statistics',id:customChannel});
+    if(!r.result.items||!r.result.items.length){
+      document.getElementById('dashGate').innerHTML='<div class="empty"><div class="big">Channel not found</div>Check the Channel ID in Setup. It must start with UC and be the exact ID from YouTube Studio.</div>';
+      return;
+    }
+    ch=r.result.items[0];
+  } else {
+    // Own channel
+    const r=await gapi.client.youtube.channels.list({part:'snippet,statistics',mine:true});
+    if(!r.result.items||!r.result.items.length){
+      document.getElementById('dashGate').innerHTML='<div class="empty"><div class="big">No channel found</div>Add the Client Channel ID in Setup if you are managing someone else\'s channel.</div>';
+      return;
+    }
+    ch=r.result.items[0];
+  }
+  channelId=ch.id;
   document.getElementById('chanChip').style.display='flex';
-  document.getElementById('chanAvatar').src=ch.snippet.thumbnails.default.url;
+  document.getElementById('chanAvatar').src=(ch.snippet.thumbnails.default||{}).url||'';
   document.getElementById('chanName').textContent=ch.snippet.title;
   document.getElementById('dashGate').style.display='none';
   document.getElementById('dashBody').style.display='block';
